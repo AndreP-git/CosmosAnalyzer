@@ -8,6 +8,9 @@ def download(lowerB, upperB):
     tx_data = []
     iterator = lowerB
     
+    # HARDCODING UPPERB FOR TESTING! REMOVE!
+    # upperB = lowerB + 100
+    
     while iterator <= upperB:
 
         t.sleep(2)
@@ -22,15 +25,18 @@ def download(lowerB, upperB):
             print("Unknown Error ({}), interrupting.".format(r.status_code))
             return 0
         
-        print(r_json)
+        #print(r_json)
         
         txs = r_json["result"]["txs"]
 
         # Extract the sender and recipient addresses for each transaction
         for tx in txs:
             
-            log = tx["tx_result"]["log"]    
-            log_json = json.loads(log)
+            log = tx["tx_result"]["log"]
+            try:    
+                log_json = json.loads(log)
+            except:
+                continue
             events = log_json[0]["events"] #[-1]["attributes"]
             
             for e in events:
@@ -96,7 +102,7 @@ def findLastBlock(timeBound, index):
     
     while step > 0:
         
-        t.sleep(1)
+        t.sleep(2)
         # response = requests.get('https://sochain.com/api/v2/get_block/' + str(crypto) + '/' + str(index + step))
         r = requests.get('https://cosmos-rpc.quickapi.com/block?height=' + str(index + step))
         exceed = False
@@ -104,6 +110,8 @@ def findLastBlock(timeBound, index):
         print(str(r.status_code) + ' ' + str(r.reason))
         if r == '<Response [404]>':
             exceed = True
+        elif r.status_code == 429: # too many requests
+            continue
         else:
             timestamp = r.json()['result']['block']['header']['time']
             time = datetime.datetime.strptime(timestamp.split('.', 1)[0], '%Y-%m-%dT%H:%M:%S')
@@ -122,33 +130,34 @@ def findLastBlock(timeBound, index):
 if __name__ == '__main__':
     
     # test values
-    start = '2023-1-16T00:00:00Z'
+    start = '2023-02-16T01:00:00Z'
     start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
-    end = '2023-01-16T00:59:59Z'
+    end = '2023-02-16T01:59:59Z'
     end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
     
-    # print('Finding the index of the first block...')
-    # lowerB = findFirstBlock(start, 13679694) # --> this is the lowest height available for this endpoint
-    # print('First block found: ' + str(lowerB))
+    print('Finding the index of the first block...')
+    # 13679694 --> this is the lowest height available for this endpoint
+    lowerB = findFirstBlock(start, 14150000) # --> this is the lowest height available for this endpoint
+    print('First block found: ' + str(lowerB))
     
-    # print('Finding the index of the last block...')    
-    # upperB = findLastBlock(end, lowerB)
-    # print('Last block found: ' + str(upperB))
+    print('Finding the index of the last block...')    
+    upperB = findLastBlock(end, lowerB)
+    print('Last block found: ' + str(upperB))
     
-    #lowerB = 13686596
-    #upperB = 13687163
-    lowerB = 14150000 # --> up to now, first block containing transactions in archive
-    upperB = 14150000
+    #lowerB = 13686596 --> lowerB of 2023-1-16T00:00:00Z - 2023-01-16T00:59:59Z
+    #upperB = 13687163 -- upperB of 2023-1-16T00:00:00Z - 2023-01-16T00:59:59Z
+    # lowerB = 14150000 # --> up to now, approximately first block containing transactions in archive
+    # upperB = 14150000
     
     print('\nStart reading the blocks')
     transList = download(lowerB, upperB)
-    print(transList)
+    print("N of transactions found: " + str(len(transList)))
 
-    # fileRes = "data/cosmos-2022-01-01/all_day.txt"
+    fileRes = "data/test/01.txt"
     
-    # with open(fileRes, 'w') as f:
-    #     print('Saving the graph in ' + fileRes)
+    with open(fileRes, 'w') as f:
+        print('Saving the graph in ' + fileRes)
 
-    #     print('Key-sender Key-receiver', file=f)
-    #     for t in transList:
-    #         print(str(t[0]) + ' ' + str(t[1]), file=f)
+        print('Key-sender Key-receiver', file=f)
+        for t in transList:
+            print(str(t[0]) + ' ' + str(t[1]), file=f)
