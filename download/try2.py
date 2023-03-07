@@ -134,9 +134,9 @@ def findLastBlock(timeBound, index):
 if __name__ == '__main__':
     
     # test values
-    start = '2023-02-16T14:00:00Z'
+    start = '2023-02-16T16:00:00Z'
     start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
-    end = '2023-02-16T14:59:59Z'
+    end = '2023-02-16T16:59:59Z'
     end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
     
     print('Finding the index of the first block...')
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     transList = download(lowerB, upperB)
     print("N of transactions found: " + str(len(transList)))
 
-    fileRes = "data/test/14.txt"
+    fileRes = "data/test/16.txt"
     
     with open(fileRes, 'w') as f:
         print('Saving the graph in ' + fileRes)
