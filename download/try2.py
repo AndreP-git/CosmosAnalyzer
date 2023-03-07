@@ -16,7 +16,10 @@ def download(lowerB, upperB):
         t.sleep(2)
         # r = requests.get('https://cosmos-rpc.quickapi.com/tx_search?query="tx.height%3D14286301"')
         print('Fetch transactions from block: ' + str(iterator))
-        r = requests.get('https://cosmos-rpc.quickapi.com/tx_search?query="tx.height%3D{}"'.format(iterator))
+        try:
+            r = requests.get('https://cosmos-rpc.quickapi.com/tx_search?query="tx.height%3D{}"'.format(iterator))
+        except:
+            return tx_data
         
         if r.status_code == 200:
             print(str(r.status_code) + ' ' + r.reason)
@@ -130,9 +133,9 @@ def findLastBlock(timeBound, index):
 if __name__ == '__main__':
     
     # test values
-    start = '2023-02-16T04:00:00Z'
+    start = '2023-02-16T05:00:00Z'
     start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
-    end = '2023-02-16T04:59:59Z'
+    end = '2023-02-16T05:59:59Z'
     end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
     
     print('Finding the index of the first block...')
@@ -153,7 +156,7 @@ if __name__ == '__main__':
     transList = download(lowerB, upperB)
     print("N of transactions found: " + str(len(transList)))
 
-    fileRes = "data/test/04.txt"
+    fileRes = "data/test/05.txt"
     
     with open(fileRes, 'w') as f:
         print('Saving the graph in ' + fileRes)
