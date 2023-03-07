@@ -55,7 +55,8 @@ def download(lowerB, upperB):
                         # if att["key"] == "amount":
                         #     amount = att["value"]
                         
-                    tx_data.append((sender, recipient))
+                    if sender != None and recipient != None:
+                        tx_data.append((sender, recipient))
 
         iterator += 1   
     
@@ -133,9 +134,9 @@ def findLastBlock(timeBound, index):
 if __name__ == '__main__':
     
     # test values
-    start = '2023-02-16T05:00:00Z'
+    start = '2023-02-16T07:00:00Z'
     start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
-    end = '2023-02-16T05:59:59Z'
+    end = '2023-02-16T07:59:59Z'
     end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
     
     print('Finding the index of the first block...')
@@ -156,7 +157,7 @@ if __name__ == '__main__':
     transList = download(lowerB, upperB)
     print("N of transactions found: " + str(len(transList)))
 
-    fileRes = "data/test/05.txt"
+    fileRes = "data/test/07.txt"
     
     with open(fileRes, 'w') as f:
         print('Saving the graph in ' + fileRes)
