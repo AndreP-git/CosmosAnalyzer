@@ -26,7 +26,7 @@ def download(lowerB, upperB):
             r_json = r.json()
         else:
             print("Unknown Error ({}), interrupting.".format(r.status_code))
-            return 0
+            return tx_data
         
         #print(r_json)
         
@@ -134,9 +134,9 @@ def findLastBlock(timeBound, index):
 if __name__ == '__main__':
     
     # test values
-    start = '2023-02-16T07:00:00Z'
+    start = '2023-02-16T08:00:00Z'
     start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
-    end = '2023-02-16T07:59:59Z'
+    end = '2023-02-16T08:59:59Z'
     end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
     
     print('Finding the index of the first block...')
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     transList = download(lowerB, upperB)
     print("N of transactions found: " + str(len(transList)))
 
-    fileRes = "data/test/07.txt"
+    fileRes = "data/test/08.txt"
     
     with open(fileRes, 'w') as f:
         print('Saving the graph in ' + fileRes)
