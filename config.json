@@ -2,7 +2,7 @@
     "directed_graph" : true,
     "weighted_graph" : false,
     "clustering" : true,
-    "day" : "2020-01-01",
+    "day" : "2023-02-16",
     "fraction_samples" : [1.0],
     "num_cpus" : 0,
     "formula_ASPL_rnd" : true
