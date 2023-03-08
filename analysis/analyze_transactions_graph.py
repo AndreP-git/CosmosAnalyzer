@@ -8,6 +8,9 @@ import time
 import json
 import sys
 from argparse import ArgumentParser
+import dill as pickle
+
+
 
 parser = ArgumentParser()
 
@@ -56,10 +59,14 @@ else:
 ##---------------------- READ FILE -----------------------##
 ##--------------------------------------------------------##
 
-file_path = "./data/merged_data/"+day+"_merged.txt"
-transactions = pd.read_csv(file_path, sep = '\s+')
+# file_path = "./data/merged_data/" + day + "_merged.txt"
+# output_path = './results/cosmos' + day
 
-output_path = './results/'+day
+# TEST VALUES
+file_path = "./data/test/00.txt"
+output_path = './results/00.txt'
+
+transactions = pd.read_csv(file_path, sep = '\s+')
 
 #%%
 ##----------------- MAP PUBLIC KEY TO ID -----------------##
@@ -117,23 +124,23 @@ print("Number of edges of data graph: {}\n".format(n_edges_data))
 
 output_path += '_transactions'
 
-if os.path.isfile(output_path+'.json'):
+if os.path.isfile(output_path + '.json'):
     print("Found already existing results. Trying to read old data and append new ones.\n")
 
-    with open(output_path+'.json') as f:
+    with open(output_path + '.json') as f:
         data = json.loads(f.read())
 
 else:
     data = {'metadata': {'day': day,
-                         'directed': directed_graph,
-                         'weighted': weighted_graph,},
+                        'directed': directed_graph,
+                        'weighted': weighted_graph,},
             'number_of_nodes': n_nodes_data,
             'number_of_edges': n_edges_data,
-            'clustering_coefficient':None,
+            'clustering_coefficient': None,
             'num_cpus': [],
             'sample_size': [],
             'num_links': [],
-            'time':[],
+            'time': [],
             'ASPL': []}
 
 
@@ -154,6 +161,7 @@ if clustering:
 
 def ASPL(nodes, graph, return_dict, procnum):
 
+    graph = pickle.loads(graph)
     tot_paths = 0.
     tot_SPL = 0.
 
@@ -170,43 +178,46 @@ def ASPL(nodes, graph, return_dict, procnum):
 ##--------------------- ASPL DATA ------------------------##
 ##--------------------------------------------------------##ù
 
-for fs in fraction_samples:
+if __name__ == '__main__':
 
-    print("Starting ASPL for a fraction of {} of the sample".format(fs))
+    for fs in fraction_samples:
 
-    start = time.time()
+        print("Starting ASPL for a fraction of {} of the sample".format(fs))
 
-    num_nodes = int(fs*len(data_graph.nodes()))
+        start = time.time()
 
-    rng = np.random.default_rng()
-    chosen_nodes = rng.choice(data_graph.nodes, num_nodes, replace=False)
-    subsample = data_graph.subgraph(chosen_nodes)
+        num_nodes = int(fs*len(data_graph.nodes()))
 
-    nodes = np.array(subsample.nodes(), dtype='int')
+        rng = np.random.default_rng()
+        chosen_nodes = rng.choice(data_graph.nodes, num_nodes, replace=False)
+        subsample = data_graph.subgraph(chosen_nodes)
 
-    nodes_for_subprocess = np.array_split(nodes, num_processes)
+        nodes = np.array(subsample.nodes(), dtype='int')
 
-    process_list = []
+        nodes_for_subprocess = np.array_split(nodes, num_processes)
 
-    manager = mp.Manager()
-    return_dict = manager.dict()
+        process_list = []
 
-    for i in range(num_processes):
+        manager = mp.Manager()
+        return_dict = manager.dict()
 
-        p = mp.Process(target=ASPL, args=[nodes_for_subprocess[i],
-                                          subsample,
-                                          return_dict,
-                                          i])
-        p.start()
-        process_list.append(p)
+        for i in range(num_processes):
 
-    for p in process_list:
-        p.join()
+            p = mp.Process(target=ASPL, args=[nodes_for_subprocess[i],
+                                            pickle.dumps(subsample),
+                                            return_dict,
+                                            i])
+            p.start()
+            process_list.append(p)
+
+        for p in process_list:
+            p.join()
 
     tot_SPL = sum([x[0] for x in return_dict.values()])
     tot_paths = sum([x[1] for x in return_dict.values()])
     ASPL_data = tot_SPL/tot_paths
 
+    # Print results
     print("Number of nodes: {}".format(len(subsample)))
     print("Number of paths: {}".format(int(tot_paths)))
     print("Number of cpus used: {}".format(num_cpus))
@@ -219,5 +230,6 @@ for fs in fraction_samples:
     data['time'].append(time.time()-start)
     data['ASPL'].append(ASPL_data)
 
+    # Printing results on file
     with open(output_path + '.json', 'w') as f:
         f.write(json.dumps(data))
