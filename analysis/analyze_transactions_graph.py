@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # output_path = './results/cosmos' + day
 
     # TEST VALUES
-    file_path = "./data/test/00.txt"
+    file_path = "./data/merged_data/2023-02-16_merged.txt"
     output_path = './results/00'
 
     transactions = pd.read_csv(file_path, sep = '\s+')
@@ -231,3 +231,5 @@ if __name__ == '__main__':
     # Printing results on file
     with open(output_path + '.json', 'w') as f:
         f.write(json.dumps(data))
+        
+    nx.draw(data_graph)
