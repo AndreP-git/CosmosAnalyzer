@@ -18,7 +18,7 @@ else:
 
 output = "./data/merged_data/" + day + "_merged.txt"
 
-files = glob.glob("data/DASH-" +day + '/*.txt')
+files = glob.glob("data/Cosmos-" + day + '/*.txt')
 files.sort()
 
 first_line = True
