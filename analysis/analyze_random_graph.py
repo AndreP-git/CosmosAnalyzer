@@ -9,64 +9,88 @@ import time
 import json
 import sys
 from argparse import ArgumentParser
+import dill as pickle
 
-parser = ArgumentParser()
-
-# get day argument
-parser.add_argument("-c", "--config", dest="config", type=str, help="configuration file path")
-parser.add_argument("-d", "--day", dest="day", type=str, help="day")
-
-args = parser.parse_args()
-
-if args.config:
-    config_path = args.config
-else:
-    sys.exit("Please give a configuration file")
-
-if args.day:
-    day = args.day
-else:
-    sys.exit("Please give a day")
-
-
-#%%
-##--------------- READ CONFIGURATION FILE ----------------##
+# %%
+##---------------- AVERAGE SHORTEST PATH -----------------##
 ##--------------------------------------------------------##
 
+def ASPL(nodes, graph, return_dict, procnum):
 
-with open(config_path, 'r') as f:
-    config = json.load(f)
+    graph = pickle.loads(graph)
+    tot_paths = 0.
+    tot_SPL = 0.
 
-directed_graph = config['directed_graph']
-weighted_graph = config['weighted_graph']
-clustering = config['clustering']
-fraction_samples = config['fraction_samples']
-formula_ASPL = config['formula_ASPL_rnd']
+    for source in nodes:
+        paths = nx.single_source_shortest_path_length(graph, source)
+
+        tot_paths += len(paths)-1
+        tot_SPL += sum(paths.values())
+
+    return_dict[procnum] = (tot_SPL, tot_paths)
+    
+
+if __name__ == '__main__':
+
+    parser = ArgumentParser()
+
+    # get day argument
+    parser.add_argument("-c", "--config", dest="config", type=str, help="configuration file path")
+    parser.add_argument("-d", "--day", dest="day", type=str, help="day")
+
+    args = parser.parse_args()
+
+    if args.config:
+        config_path = args.config
+    else:
+        sys.exit("Please give a configuration file")
+
+    if args.day:
+        day = args.day
+    else:
+        sys.exit("Please give a day")
 
 
-num_cpus = config['num_cpus']
-if num_cpus==0:
-    num_cpus = mp.cpu_count()
-    num_processes = 2 * num_cpus
-elif num_cpus==-1:
-    num_cpus = mp.cpu_count()
-    num_processes = num_cpus - 1
-else:
-    num_processes = num_cpus
+    #%%
+    ##--------------- READ CONFIGURATION FILE ----------------##
+    ##--------------------------------------------------------##
 
 
-if weighted_graph:
-    print("Weighted version not implemented. Ignoring...")
+    with open(config_path, 'r') as f:
+        config = json.load(f)
 
-for day in days:
+    directed_graph = config['directed_graph']
+    weighted_graph = config['weighted_graph']
+    clustering = config['clustering']
+    fraction_samples = config['fraction_samples']
+    formula_ASPL = config['formula_ASPL_rnd']
+
+
+    num_cpus = config['num_cpus']
+    if num_cpus==0:
+        num_cpus = mp.cpu_count()
+        num_processes = 2 * num_cpus
+    elif num_cpus==-1:
+        num_cpus = mp.cpu_count()
+        num_processes = num_cpus - 1
+    else:
+        num_processes = num_cpus
+
+
+    if weighted_graph:
+        print("Weighted version not implemented. Ignoring...")
+
+    #for day in days:
     #%%
     ##---------------------- READ FILE -----------------------##
     ##--------------------------------------------------------##
 
-    file_path = "./results/" + day +"_"
-    if directed_graph:
-        file_path+="directed"
-    file_path += "_nx_mp.json"
+    #file_path = "./results/" + day + "_"
+    file_path = "./results/00_directed_transactions.json"
+
+    # if directed_graph:
+    #     file_path+="directed"
+    # file_path += "_nx_mp.json"
 
     with open(file_path) as f:
         data = json.loads(f.read())
@@ -74,8 +98,8 @@ for day in days:
     n_nodes = data['number_of_nodes']
     n_edges = data['number_of_edges']
 
-    output_path = './results/'+day'_random'
-
+    # output_path = './results/' + day + '_random'
+    output_path = './results/00_random'
 
     # %%
     ##------------------ BUILD RANDOM GRAPH ------------------##
@@ -109,8 +133,8 @@ for day in days:
 
     else:
         data = {'metadata': {'day': day,
-                             'directed': directed_graph,
-                             'weighted': weighted_graph},
+                                'directed': directed_graph,
+                                'weighted': weighted_graph},
                 'number_of_nodes': n_nodes_random,
                 'number_of_edges': n_edges_random,
                 'clustering_coefficient':None,
@@ -127,25 +151,7 @@ for day in days:
     print("Clustering coefficient of data graph: {:.8f}\n".format(clust_coeff))
     data['clustering_coefficient'] = clust_coeff
 
-
-    # %%
-    ##---------------- AVERAGE SHORTEST PATH -----------------##
-    ##--------------------------------------------------------##
-
-    def ASPL(nodes, graph, return_dict, procnum):
-
-        tot_paths = 0.
-        tot_SPL = 0.
-
-        for source in nodes:
-            paths = nx.single_source_shortest_path_length(graph, source)
-
-            tot_paths += len(paths)-1
-            tot_SPL += sum(paths.values())
-
-        return_dict[procnum] = (tot_SPL, tot_paths)
-
-
+    # Simple ASPL formula
     def ASPL_formula(n_nodes, n_edges):
         L = 0.5 + (np.log(n_nodes)-0.57722)/np.log(n_edges/n_nodes)
         return L
@@ -179,9 +185,9 @@ for day in days:
             for i in range(num_processes):
 
                 p = mp.Process(target=ASPL, args=[nodes_for_subprocess[i],
-                                                  subsample,
-                                                  return_dict,
-                                                  i])
+                                                    pickle.dumps(subsample),
+                                                    return_dict,
+                                                    i])
                 p.start()
                 process_list.append(p)
 

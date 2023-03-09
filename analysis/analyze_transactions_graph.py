@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     # TEST VALUES
     file_path = "./data/test/00.txt"
-    output_path = './results/00.txt'
+    output_path = './results/00'
 
     transactions = pd.read_csv(file_path, sep = '\s+')
 
