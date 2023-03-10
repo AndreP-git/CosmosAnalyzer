@@ -9,6 +9,7 @@ import json
 import sys
 from argparse import ArgumentParser
 import dill as pickle
+import matplotlib.pyplot as plt
 
 
 # %%
@@ -82,7 +83,8 @@ if __name__ == '__main__':
     # output_path = './results/cosmos' + day
 
     # TEST VALUES
-    file_path = "./data/merged_data/2023-02-16_merged.txt"
+    # file_path = "./data/merged_data/2023-02-16_merged.txt"
+    file_path = "./data/Cosmos-2023-02-16/00.txt"
     output_path = './results/00'
 
     transactions = pd.read_csv(file_path, sep = '\s+')
@@ -231,5 +233,13 @@ if __name__ == '__main__':
     # Printing results on file
     with open(output_path + '.json', 'w') as f:
         f.write(json.dumps(data))
-        
-    nx.draw(data_graph)
+    
+    plt.figure(figsize=(10,8))
+    #pos = nx.kamada_kawai_layout(data_graph)
+    pos = nx.random_layout(data_graph)
+    node_options = {"node_color": "blue", "node_size": 20}
+    edge_options = {"width": .50, "alpha": .5, "edge_color": "black"}
+    nx.draw_networkx_nodes(data_graph, pos, **node_options)
+    nx.draw_networkx_edges(data_graph, pos, **edge_options)
+    #nx.draw(data_graph)
+    plt.show()
