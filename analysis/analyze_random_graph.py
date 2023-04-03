@@ -1,5 +1,4 @@
 
-#%%
 import numpy as np
 import multiprocessing as mp
 import networkx as nx
@@ -11,10 +10,7 @@ import sys
 from argparse import ArgumentParser
 import dill as pickle
 
-# %%
 ##---------------- AVERAGE SHORTEST PATH -----------------##
-##--------------------------------------------------------##
-
 def ASPL(nodes, graph, return_dict, procnum):
 
     graph = pickle.loads(graph)
@@ -29,7 +25,7 @@ def ASPL(nodes, graph, return_dict, procnum):
 
     return_dict[procnum] = (tot_SPL, tot_paths)
     
-
+##---------------- MAIN -----------------##
 if __name__ == '__main__':
 
     parser = ArgumentParser()
@@ -50,12 +46,7 @@ if __name__ == '__main__':
     else:
         sys.exit("Please give a day")
 
-
-    #%%
-    ##--------------- READ CONFIGURATION FILE ----------------##
-    ##--------------------------------------------------------##
-
-
+    # Reading config file
     with open(config_path, 'r') as f:
         config = json.load(f)
 
@@ -65,7 +56,7 @@ if __name__ == '__main__':
     fraction_samples = config['fraction_samples']
     formula_ASPL = config['formula_ASPL_rnd']
 
-
+    # Setting cpus number for multiprocessing ASPL
     num_cpus = config['num_cpus']
     if num_cpus==0:
         num_cpus = mp.cpu_count()
@@ -76,15 +67,14 @@ if __name__ == '__main__':
     else:
         num_processes = num_cpus
 
-
+    #Skipping weighted version for now
     if weighted_graph:
         print("Weighted version not implemented. Ignoring...")
 
-    #for day in days:
-    #%%
-    ##---------------------- READ FILE -----------------------##
-    ##--------------------------------------------------------##
-
+    # for day in days:
+    
+    # Reading file to retrieve pairs sender-receiptor
+    # TEST VALUES
     #file_path = "./results/" + day + "_"
     file_path = "./results/00_directed_transactions.json"
 
@@ -101,10 +91,7 @@ if __name__ == '__main__':
     # output_path = './results/' + day + '_random'
     output_path = './results/00_random'
 
-    # %%
-    ##------------------ BUILD RANDOM GRAPH ------------------##
-    ##--------------------------------------------------------##
-
+    # Building RANDOM graph using networkx library
     link_probability = n_edges/(n_nodes*(n_nodes - 1))
 
     if link_probability < 1e-3:
@@ -119,18 +106,12 @@ if __name__ == '__main__':
     print("Number of nodes of random graph: ", n_nodes_random)
     print("Number of edges of random graph: ", n_edges_random)
 
-
-
-    #%%
-    ##---------------------- PREPARE OUTPUT FILE -----------------------##
-    ##------------------------------------------------------------------##
-
+    # Preparing output file
     if os.path.isfile(output_path+'.json'):
         print("Found already existing results. Trying to read old data and append new ones.\n")
 
         with open(output_path+'.json') as f:
             data = json.loads(f.read())
-
     else:
         data = {'metadata': {'day': day,
                                 'directed': directed_graph,
@@ -143,10 +124,7 @@ if __name__ == '__main__':
                 'time':[],
                 'ASPL': []}
 
-    # %%
-    ##---------------- CLUSTERING COEFFICIENT ----------------##
-    ##--------------------------------------------------------##
-
+    # Clustering coefficient
     clust_coeff = nx.average_clustering(random_graph)
     print("Clustering coefficient of data graph: {:.8f}\n".format(clust_coeff))
     data['clustering_coefficient'] = clust_coeff
@@ -156,25 +134,18 @@ if __name__ == '__main__':
         L = 0.5 + (np.log(n_nodes)-0.57722)/np.log(n_edges/n_nodes)
         return L
 
-    #%%
-    ##--------------------- ASPL DATA ------------------------##
-    ##--------------------------------------------------------##ù
-
+    # ASPL
     if not formula_ASPL:
         for fs in fraction_samples:
-
             print("Starting ASPL for a fraction of {} of the sample".format(fs))
-
             start = time.time()
 
             num_nodes = int(fs*len(random_graph.nodes()))
-
             rng = np.random.default_rng()
             chosen_nodes = rng.choice(random_graph.nodes, num_nodes, replace=False)
             subsample = random_graph.subgraph(chosen_nodes)
 
             nodes = np.array(subsample.nodes(), dtype='int')
-
             nodes_for_subprocess = np.array_split(nodes, num_processes)
 
             process_list = []
@@ -182,31 +153,38 @@ if __name__ == '__main__':
             manager = mp.Manager()
             return_dict = manager.dict()
 
+            # Starting process
             for i in range(num_processes):
 
-                p = mp.Process(target=ASPL, args=[nodes_for_subprocess[i],
-                                                    pickle.dumps(subsample),
-                                                    return_dict,
-                                                    i])
+                p = mp.Process(target=ASPL,
+                               args=[nodes_for_subprocess[i],
+                                    pickle.dumps(subsample),
+                                    return_dict,
+                                    i])
                 p.start()
                 process_list.append(p)
 
+            # Waiting for process to terminate
             for p in process_list:
                 p.join()
 
+            # Computing ASPL formula as tot_SPL/tot_paths
             tot_SPL = sum([x[0] for x in return_dict.values()])
             tot_paths = sum([x[1] for x in return_dict.values()])
             ASPL = tot_SPL/tot_paths
 
+            # Print results
             print("Number of cpus used: {}".format(num_cpus))
             print("Time required: {:.2f} seconds".format(time.time()-start))
             print("ASPL: {:.3f}\n".format(ASPL))
 
+            # Appending data to print on output file
             data['num_cpus'].append(num_cpus)
             data['num_links'].append(int(tot_paths))
             data['time'].append(time.time()-start)
             data['ASPL'].append(ASPL)
 
+    # simple case
     else:
         ASPL = ASPL_formula(n_nodes_random, n_edges_random)
 
@@ -217,6 +195,6 @@ if __name__ == '__main__':
         data['time'].append(0)
         data['ASPL'].append(ASPL)
 
-    print("-"*20)
+    # Printing results on output file
     with open(output_path + '.json', 'w') as f:
         f.write(json.dumps(data))
