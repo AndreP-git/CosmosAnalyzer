@@ -199,3 +199,9 @@ if __name__ == '__main__':
     # Printing results on output file
     with open(output_path + '.json', 'w') as f:
         f.write(json.dumps(data))
+    
+    # Printing data_graph on a file
+    data_graph_file = "./data_graph_" + day + ".txt"
+    print(data_graph)
+    nx.write_adjlist(data_graph, data_graph_file)
+    exit(0)
