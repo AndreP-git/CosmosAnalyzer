@@ -13,8 +13,8 @@ if args.day:
 else:
     sys.exit("Please give a day")
 
+# Preparing output
 output = "./data/merged_data/" + day + "_merged.txt"
-
 files = glob.glob("data/Cosmos-" + day + '/*.txt')
 files.sort()
 
