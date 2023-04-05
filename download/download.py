@@ -22,7 +22,7 @@ def download(lowerB, upperB):
     while iterator <= upperB:
 
         # sleep used to control the amount of requests over time since the endpoint response is 429 if too frequent
-        t.sleep(2)
+        t.sleep(1)
         
         # HARDCODING FOR TESTING! REMOVE!
         # r = requests.get('https://cosmos-rpc.quickapi.com/tx_search?query="tx.height%3D14286301"')
@@ -30,6 +30,8 @@ def download(lowerB, upperB):
         try:
             r = requests.get('https://cosmos-rpc.quickapi.com/tx_search?query="tx.height%3D{}"'.format(iterator))
         except:
+            iterator += 1
+            continue
             return tx_data
         
         if r.status_code == 200:
@@ -37,7 +39,9 @@ def download(lowerB, upperB):
             r_json = r.json()
         else:
             print("Unknown Error ({}), interrupting.".format(r.status_code))
-            return tx_data
+            iterator += 1
+            continue
+            #return tx_data
         
         # extracting transactions list
         txs = r_json["result"]["txs"]
@@ -175,7 +179,8 @@ if __name__ == '__main__':
     # starting_block = 14150000 # tunable
     starting_block = 14750000
     
-    for hh in range(0, 24):
+    #for hh in range(0, 24):
+    for hh in range(14,15):
         
         # set hour string
         hh_str = lambda hh: "0" + str(hh) if hh <= 9 else str(hh)
@@ -208,7 +213,7 @@ if __name__ == '__main__':
         if not os.path.exists("data/" + res_dir):
             os.makedirs("data/" + res_dir)
         
-        res_file = "data/" + res_dir + "/" + hh + ".txt"
+        res_file = "data/" + res_dir + "/" + hh_str(hh) + ".txt"
         
         with open(res_file, 'w') as f:
             print('Saving the graph in ' + res_file)
