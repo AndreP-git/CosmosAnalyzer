@@ -204,4 +204,3 @@ if __name__ == '__main__':
     data_graph_file = "./data_graph_" + day + ".txt"
     print(data_graph)
     nx.write_adjlist(data_graph, data_graph_file)
-    exit(0)
