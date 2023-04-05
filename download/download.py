@@ -2,6 +2,7 @@ import requests
 import json
 import datetime
 import time as t
+import os
 
 def download(lowerB, upperB):
     '''
@@ -145,6 +146,9 @@ def findLastBlock(timeBound, index):
         elif r.status_code == 429:
             # too many requests
             continue
+        elif r.status_code >= 500:
+            # Internal server error
+            continue
         else:
             # retrieving timestamp of the block
             timestamp = r.json()['result']['block']['header']['time']
@@ -163,36 +167,52 @@ def findLastBlock(timeBound, index):
 
 if __name__ == '__main__':
     
-    # test values
-    start = '2023-02-16T23:00:00Z'
-    start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
-    end = '2023-02-16T23:59:59Z'
-    end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
+    date = "2023-04-01"
+    # hour = str(start.time()).split(":")[0]
     
     # 13679694 --> this is the lowest height available for this endpoint
-    # 14150000 --> up to now, approximately first block containing transactions in archive
+    # 14150000 --> up to now, approximately first block containing transactions in archive for this endpoint
+    # starting_block = 14150000 # tunable
+    starting_block = 14750000
     
-    # FIND FIRST BLOCK
-    print('Finding the index of the first block...')
-    lowerB = findFirstBlock(start, 14150000)
-    print('First block found: ' + str(lowerB))
-    
-    # FIND LAST BLOCK
-    print('Finding the index of the last block...')    
-    upperB = findLastBlock(end, lowerB)
-    print('Last block found: ' + str(upperB))
-    
-    # DOWNLOAD TRANSACTIONS
-    print('\nStart reading the blocks')
-    transList = download(lowerB, upperB)
-    print("N of transactions found: " + str(len(transList)))
+    for hh in range(0, 24):
+        
+        # set hour string
+        hh_str = lambda hh: "0" + str(hh) if hh <= 9 else str(hh)
+        
+        # e.g start = '2023-04-01T00:00:00Z'
+        start = date + "T" + hh_str(hh) + ":00:00Z"
+        start = datetime.datetime.strptime(start[:-1], '%Y-%m-%dT%H:%M:%S')
+        
+        # e.g. end = '2023-04-01T00:59:59Z'
+        end = date + "T" + hh_str(hh) + ":59:59Z"
+        end = datetime.datetime.strptime(end[:-1], '%Y-%m-%dT%H:%M:%S')
 
-    # SAVING RESULTS
-    fileRes = "data/test/23.txt"
-    
-    with open(fileRes, 'w') as f:
-        print('Saving the graph in ' + fileRes)
+        # FIND FIRST BLOCK
+        print('Finding the index of the first block...')
+        lowerB = findFirstBlock(start, starting_block)
+        print('First block found: ' + str(lowerB))
+        
+        # FIND LAST BLOCK
+        print('Finding the index of the last block...')    
+        upperB = findLastBlock(end, lowerB)
+        print('Last block found: ' + str(upperB))
+        
+        # DOWNLOAD TRANSACTIONS
+        print('\nStart reading the blocks')
+        transList = download(lowerB, upperB)
+        print("N of transactions found: " + str(len(transList)))
 
-        print('Key-sender Key-receiver', file=f)
-        for t in transList:
-            print(str(t[0]) + ' ' + str(t[1]), file=f)
+        # SAVING RESULTS
+        res_dir = "Cosmos-" + date
+        if not os.path.exists("data/" + res_dir):
+            os.makedirs("data/" + res_dir)
+        
+        res_file = "data/" + res_dir + "/" + hh + ".txt"
+        
+        with open(res_file, 'w') as f:
+            print('Saving the graph in ' + res_file)
+
+            print('Key-sender Key-receiver', file=f)
+            for t in transList:
+                print(str(t[0]) + ' ' + str(t[1]), file=f)
