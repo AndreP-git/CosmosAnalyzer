@@ -180,7 +180,7 @@ if __name__ == '__main__':
     starting_block = 14750000
     
     #for hh in range(0, 24):
-    for hh in range(14,15):
+    for hh in range(23,24):
         
         # set hour string
         hh_str = lambda hh: "0" + str(hh) if hh <= 9 else str(hh)
