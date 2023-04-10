@@ -69,9 +69,9 @@ if __name__ == '__main__':
     # Reading file to retrieve pairs sender-receiptor
     # TEST VALUES
     file_path = "./data/merged_data/" + day + "_merged.txt" # (e.g. "./data/merged_data/2023-02-16_merged.txt")
-    # file_path = "./data/Cosmos-2023-02-16/00.txt"
-    # output_path = './results/' + day
+    # file_path = "./data/Cosmos-2023-04-01/00.txt"
     output_path = './results/' + day
+    # output_path = './results/report'
 
     transactions = pd.read_csv(file_path, sep = '\s+')
 
@@ -202,5 +202,6 @@ if __name__ == '__main__':
     
     # Printing data_graph on a file
     data_graph_file = "./graphs/data_graph_" + day + ".txt"
+    # data_graph_file = "./graphs/data_graph_report.txt"
     print(data_graph)
     nx.write_adjlist(data_graph, data_graph_file)
