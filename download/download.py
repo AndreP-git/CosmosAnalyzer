@@ -3,6 +3,8 @@ import json
 import datetime
 import time as t
 import os
+from argparse import ArgumentParser
+import sys
 
 def download(lowerB, upperB):
     '''
@@ -170,9 +172,17 @@ def findLastBlock(timeBound, index):
 # -------------------------------------------------------
 
 if __name__ == '__main__':
+        
+    parser = ArgumentParser()
+    parser.add_argument("-d", "--date", dest="date", type=str, help="date")
+    args = parser.parse_args()
     
-    date = "2023-04-01"
-    # hour = str(start.time()).split(":")[0]
+    if args.date:
+        date = args.date
+    else:
+        sys.exit("Please give a date")
+    
+    # date = "2023-04-01"
     
     # 13679694 --> this is the lowest height available for this endpoint
     # 14150000 --> up to now, approximately first block containing transactions in archive for this endpoint
@@ -180,7 +190,7 @@ if __name__ == '__main__':
     starting_block = 14750000
     
     #for hh in range(0, 24):
-    for hh in range(23,24):
+    for hh in range(0,2):
         
         # set hour string
         hh_str = lambda hh: "0" + str(hh) if hh <= 9 else str(hh)
@@ -221,3 +231,4 @@ if __name__ == '__main__':
             print('Key-sender Key-receiver', file=f)
             for t in transList:
                 print(str(t[0]) + ' ' + str(t[1]), file=f)
+            

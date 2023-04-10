@@ -67,7 +67,7 @@ if __name__ == '__main__':
     else:
         num_processes = num_cpus
 
-    #Skipping weighted version for now
+    # skipping weighted version for now
     if weighted_graph:
         print("Weighted version not implemented. Ignoring...")
 
@@ -75,12 +75,13 @@ if __name__ == '__main__':
     
     # Reading file to retrieve pairs sender-receiptor
     # TEST VALUES
-    #file_path = "./results/" + day + "_"
-    file_path = "./results/00_directed_transactions.json"
+    file_path = "./results/" + day + "_"
+    # file_path = "./results/00_directed_transactions.json"
 
-    # if directed_graph:
-    #     file_path+="directed"
-    # file_path += "_nx_mp.json"
+    if directed_graph:
+        file_path += "directed"
+        
+    file_path += "_transactions.json"
 
     with open(file_path) as f:
         data = json.loads(f.read())
@@ -88,8 +89,8 @@ if __name__ == '__main__':
     n_nodes = data['number_of_nodes']
     n_edges = data['number_of_edges']
 
-    # output_path = './results/' + day + '_random'
-    output_path = './results/00_random'
+    output_path = './results/' + day + '_random'
+    # output_path = './results/00_random'
 
     # Building RANDOM graph using networkx library
     link_probability = n_edges/(n_nodes*(n_nodes - 1))
