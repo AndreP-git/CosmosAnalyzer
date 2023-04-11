@@ -1,7 +1,7 @@
 import requests
 import json
 import datetime
-import time as t
+import time
 import os
 from argparse import ArgumentParser
 import sys
@@ -21,13 +21,13 @@ def download(lowerB, upperB):
     # HARDCODING FOR TESTING!
     # upperB = lowerB + 100
     
-    while iterator <= lowerB + 2:
-    # while iterator <= upperB:
+    # while iterator <= lowerB + 1:
+    while iterator <= upperB:
 
         # sleep used to control the amount of requests over time since the endpoint response is 429 if too frequent
-        t.sleep(1)
+        time.sleep(1)
         
-        # HARDCODING FOR TESTING! REMOVE!
+        # HARDCODING FOR TESTING!
         # r = requests.get('https://cosmos-rpc.quickapi.com/tx_search?query="tx.height%3D14286301"')
         print('Fetch transactions from block: ' + str(iterator))
         try:
@@ -35,7 +35,7 @@ def download(lowerB, upperB):
         except:
             iterator += 1
             continue
-            return tx_data
+            # return tx_data
         
         if r.status_code == 200:
             print(str(r.status_code) + ' ' + r.reason)
@@ -44,7 +44,7 @@ def download(lowerB, upperB):
             print("Unknown Error ({}), interrupting.".format(r.status_code))
             iterator += 1
             continue
-            #return tx_data
+            # return tx_data
         
         # extracting transactions list
         txs = r_json["result"]["txs"]
@@ -99,9 +99,7 @@ def findFirstBlock(timeBound, index):
     while step > 0 or curr_time < timeBound:
         
         try:
-            print("try: index=" + str(index))
-            t.sleep(1)
-            print("after sleep")
+            time.sleep(1)
             # time = datetime.datetime.fromtimestamp(requests.get('https://sochain.com/api/v2/get_block/' + str(crypto) + '/' + str(index)).json()['data']['time']).strftime('%Y-%m-%d %H:%M:%S')
             r = requests.get('https://cosmos-rpc.quickapi.com/block?height=' + str(index))
             print(str(r.status_code) + ' ' + str(r.reason))
@@ -126,10 +124,6 @@ def findFirstBlock(timeBound, index):
             if descending is False:
                 step = int(step / 2)
                 descending = True
-        
-        if curr_time == timeBound:
-            print("inside ==")
-            return index + 1
 
     return index + 1
 
@@ -149,7 +143,7 @@ def findLastBlock(timeBound, index):
     
     while step > 0:
         
-        t.sleep(2)
+        time.sleep(2)
         # response = requests.get('https://sochain.com/api/v2/get_block/' + str(crypto) + '/' + str(index + step))
         r = requests.get('https://cosmos-rpc.quickapi.com/block?height=' + str(index + step))
         exceed = False
@@ -197,8 +191,8 @@ if __name__ == '__main__':
     # starting_block = 14150000 # tunable
     starting_block = 14750000
     
-    #for hh in range(0, 24):
-    for hh in range(0,3):
+    for hh in range(0, 24):
+    # for hh in range(0,1):
         
         # set hour string
         hh_str = lambda hh: "0" + str(hh) if hh <= 9 else str(hh)
