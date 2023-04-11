@@ -18,10 +18,11 @@ def download(lowerB, upperB):
     tx_data = []
     iterator = lowerB
     
-    # HARDCODING FOR TESTING! REMOVE!
+    # HARDCODING FOR TESTING!
     # upperB = lowerB + 100
     
-    while iterator <= upperB:
+    while iterator <= lowerB + 2:
+    # while iterator <= upperB:
 
         # sleep used to control the amount of requests over time since the endpoint response is 429 if too frequent
         t.sleep(1)
@@ -92,27 +93,30 @@ def findFirstBlock(timeBound, index):
             - index of the first block of the sequence in the desired interval of time specified
     '''
     
+    curr_time = ''
     step = 10000
     descending = True
-    while step > 0 or time < timeBound:
+    while step > 0 or curr_time < timeBound:
         
         try:
+            print("try: index=" + str(index))
             t.sleep(1)
+            print("after sleep")
             # time = datetime.datetime.fromtimestamp(requests.get('https://sochain.com/api/v2/get_block/' + str(crypto) + '/' + str(index)).json()['data']['time']).strftime('%Y-%m-%d %H:%M:%S')
             r = requests.get('https://cosmos-rpc.quickapi.com/block?height=' + str(index))
             print(str(r.status_code) + ' ' + str(r.reason))
             
             # retrieving timestamp of the block
             timestamp = r.json()['result']['block']['header']['time']
-            time = datetime.datetime.strptime(timestamp.split('.', 1)[0], '%Y-%m-%dT%H:%M:%S')
-            print("block_time: " + str(time) + " timeBound: " + str(timeBound) + " curr_index: " + str(index))
+            curr_time = datetime.datetime.strptime(timestamp.split('.', 1)[0], '%Y-%m-%dT%H:%M:%S')
+            print("block_time: " + str(curr_time) + " timeBound: " + str(timeBound) + " curr_index: " + str(index))
             
-        except:
-            #print(str(r.status_code) + str(r.reason))
+        except Exception as e:
+            print(e)
             index += 1
             continue
             
-        if time < timeBound:
+        if curr_time < timeBound:
             index = index + step
             if descending is True:
                 step = int(step / 2)
@@ -122,6 +126,10 @@ def findFirstBlock(timeBound, index):
             if descending is False:
                 step = int(step / 2)
                 descending = True
+        
+        if curr_time == timeBound:
+            print("inside ==")
+            return index + 1
 
     return index + 1
 
@@ -137,7 +145,7 @@ def findLastBlock(timeBound, index):
     '''
     
     step = 10000
-    time = ''
+    curr_time = ''
     
     while step > 0:
         
@@ -158,9 +166,9 @@ def findLastBlock(timeBound, index):
         else:
             # retrieving timestamp of the block
             timestamp = r.json()['result']['block']['header']['time']
-            time = datetime.datetime.strptime(timestamp.split('.', 1)[0], '%Y-%m-%dT%H:%M:%S')
-            print("block_time: " + str(time) + " timeBound: " + str(timeBound) + " curr_index: " + str(index))
-            exceed = time > timeBound
+            curr_time = datetime.datetime.strptime(timestamp.split('.', 1)[0], '%Y-%m-%dT%H:%M:%S')
+            print("block_time: " + str(curr_time) + " timeBound: " + str(timeBound) + " curr_index: " + str(index))
+            exceed = curr_time > timeBound
 
         if exceed:
             step = int(step / 2)
@@ -190,7 +198,7 @@ if __name__ == '__main__':
     starting_block = 14750000
     
     #for hh in range(0, 24):
-    for hh in range(0,2):
+    for hh in range(0,3):
         
         # set hour string
         hh_str = lambda hh: "0" + str(hh) if hh <= 9 else str(hh)
@@ -231,4 +239,6 @@ if __name__ == '__main__':
             print('Key-sender Key-receiver', file=f)
             for t in transList:
                 print(str(t[0]) + ' ' + str(t[1]), file=f)
+                
+        # starting_block = upperB + 1
             
