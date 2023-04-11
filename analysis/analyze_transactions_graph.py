@@ -205,3 +205,4 @@ if __name__ == '__main__':
     # data_graph_file = "./graphs/data_graph_report.txt"
     print(data_graph)
     nx.write_adjlist(data_graph, data_graph_file)
+    
