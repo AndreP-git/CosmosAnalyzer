@@ -12,4 +12,4 @@ Structure of the project:
 
 ![alt text](https://github.com/AndreP-git/CosmosAnalyzer/blob/master/diagram.png?raw=true)
 
-More details regarding technical details and results can be found in the pdf report.
+More info regarding technical details and results can be found in the pdf report.
