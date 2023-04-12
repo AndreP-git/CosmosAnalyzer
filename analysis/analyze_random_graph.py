@@ -70,8 +70,6 @@ if __name__ == '__main__':
     # skipping weighted version for now
     if weighted_graph:
         print("Weighted version not implemented. Ignoring...")
-
-    # for day in days:
     
     # Reading file to retrieve pairs sender-receiptor
     # TEST VALUES

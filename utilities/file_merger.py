@@ -6,6 +6,7 @@ import sys
 parser = ArgumentParser()
 parser.add_argument("-d", "--day", dest="day", type=str, help="day")
 args = parser.parse_args()
+
 abs_path = os.path.dirname(os.path.realpath(__file__))
 
 if args.day:
