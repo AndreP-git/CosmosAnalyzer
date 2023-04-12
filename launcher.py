@@ -12,13 +12,13 @@ if args.date:
 else:
     sys.exit("Please give a date")
 
-# # python ./download/download.py -d 2023-04-02
-# subprocess.run(["python", "download/download.py",
-#                 "-d", "{}".format(date)])
+# python ./download/download.py -d 2023-04-02
+subprocess.run(["python", "download/download.py",
+                "-d", "{}".format(date)])
 
-# # python ./utilities/file_merger.py -d 2023-04-02
-# subprocess.run(["python", "utilities/file_merger.py",
-#                 "-d", "{}".format(date)])
+# python ./utilities/file_merger.py -d 2023-04-02
+subprocess.run(["python", "utilities/file_merger.py",
+                "-d", "{}".format(date)])
 
 # python ./analysis/analyze_transactions_graph.py -c "config.json" -d 2023-04-02
 subprocess.run(["python", "analysis/analyze_transactions_graph.py",
